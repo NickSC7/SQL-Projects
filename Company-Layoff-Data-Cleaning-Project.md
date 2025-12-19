@@ -6,11 +6,11 @@ This project is designed to demonstrate SQL skills and techniques typically used
 
 ## Objectives
 
-1. **Set up a layoff database**: Create and populate a company layoff database with layoff data.
-2. **Remove Duplicates (If any)**: Identify and remove any duplicates
-3. **Standardize the Data**:
-4. **Analyze Null or Blank values**:
-5. **Remove Any Columns**:
+1. **Set up a layoff database**
+2. **Remove Duplicates (If any)**
+3. **Standardize the Data**
+4. **Analyze Null or Blank values**
+5. **Remove Any Ambiguous or Meaningless Data**
 
 ## Project Structure
 
@@ -223,7 +223,7 @@ JOIN layoffs_staging t2
 WHERE t1.industry IS NULL
 AND t2.industry is NOT NULL;
 
--- Updates the industry value with its matching industry value from the same company
+-- Populates the company's missing industry value with its matching industry value
 UPDATE layoffs_staging2 t1
 JOIN layoffs_staging2 t2
 	ON t1.company = t2.company
@@ -233,4 +233,33 @@ AND t2.industry is NOT NULL;
 
 ```
 
+### 5. Remove Any Ambiguous or Meaningless Data
+
+- **Removing Ambiguous Data**: The data is about company layoffs, but there are still remaining records that have no layoff data that may get in the way of exploratory analysis. After analyzing which data had no layoff data like total_laid_off or percentage_laid_off, I deleted those records since they provided no value.
+- **Removing Meaningless Data**: Earlier in the project, a row_num column was made to help identify duplicate records in the dataset. After cleaning up the duplciates, that column is no longer necessary in the dataset. I deleted the column, and finalized cleaning the layoff dataset.
+
+```sql
+
+-- Analyzes which companies have no layoff data
+SELECT *
+FROM layoffs_staging2
+WHERE total_laid_off IS NULL
+AND percentage_laid_off IS NULL;
+
+-- Deletes entities with no layoff data
+DELETE 
+FROM layoffs_staging2
+WHERE total_laid_off IS NULL
+AND percentage_laid_off IS NULL;
+
+-- Deletes the row number column from previous exploration as its no longer needed
+ALTER TABLE layoffs_staging2
+DROP COLUMN row_num;
+
+-- Layoff table is cleaned and ready for explorative analysis
+
+```
+## Conclusion
+
+Throughout this project, I have gained a better understanding of database setup and data cleaning. The real-world scenario with the company layoff data helps me feel better prepared for my future career. Making sure the data is clean and ready for exploratory analysis is often one of the first steps taken before diving into the data to drive better business decicions. Next, I will be performing explorative data analysis on this same data set.
 
