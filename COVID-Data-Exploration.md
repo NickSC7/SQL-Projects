@@ -4,6 +4,14 @@
 
 This project is designed to demonstrate SQL skills and techniques typically used by data analysts to explore COVID data from vaccination to the death toll. The project involves finding insights within the COVID vaccinations and death data that can be used for visualizations and foster better business intelligence. I will be using Microsoft SQL Server to complete this project.
 
+## Skills Used
+- Converting Data Types(Cast and Convert)
+- Aggregate Functions(MAX, SUM, )
+- Window Functions(OVER.. Partition By)
+- CTE's
+- Temp Table
+- Views
+
 ## Objectives
 
 1. **Create the Database**
@@ -19,6 +27,7 @@ This project is designed to demonstrate SQL skills and techniques typically used
 ### 3. Explore the Data
 - When taking a look at all the data, I noticed that sometimes the continent column would be null while the location is filled in. When this was happening, I noticed that the data not only had the statistics for each country, but combined the statistics for each contintent as well. In order to avoid this interfering with my data exploration, I used a where statement to filter out when the continent column was null.
 - Another problem I ran into while exploring the data was having the wrong data type for calculations. For example, total deaths was inputted as an nvarchar and couldn't be used in an aggregate function. I had to convert the data type using the cast expression in order to get the right results.
+  
 ```sql
 
 -- Looking at Total Cases vs Total Deaths
@@ -80,9 +89,80 @@ SELECT SUM(new_cases) as Total_Cases, SUM(CAST(new_deaths as int)) as Total_Deat
 FROM PortfolioProject..CovidDeaths
 WHERE continent is NOT NULL
 
+-- Looking at Total Population vs Vaccinations
+-- Window Functions
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
+SUM(CONVERT(int, vac.new_vaccinations)) OVER (Partition BY dea.location ORDER BY dea.location, dea.date) as RollingTotalVaccinated,
+SUM(CONVERT(int, vac.new_vaccinations)) OVER (Partition BY dea.location ORDER BY dea.location, dea.date)/dea.population * 100 as PercentPopVaccinated
+FROM PortfolioProject..CovidDeaths dea
+JOIN PortfolioProject..CovidVaccinations vac
+	ON dea.location = vac.location 
+	AND dea.date = vac.date
+WHERE dea.continent is NOT NULL
+GROUP BY dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+ORDER BY dea.location, dea.date
+
+-- USE CTE instead of only window functions
+
+With PopvsVac (Continent, Location, Date, Population, New_Vacciantions, RollingTotalVaccinated)
+as
+(
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
+SUM(CONVERT(int, vac.new_vaccinations)) OVER (Partition BY dea.location ORDER BY dea.location, dea.date) as RollingTotalVaccinated
+FROM PortfolioProject..CovidDeaths dea
+JOIN PortfolioProject..CovidVaccinations vac
+	ON dea.location = vac.location 
+	AND dea.date = vac.date
+WHERE dea.continent is NOT NULL
+GROUP BY dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+)
+SELECT *, (RollingTotalVaccinated/Population) * 100 as PercentPopVaccinated 
+FROM PopvsVac
+
+-- Use TEMP TABLE instead of CTE
+
+DROP table if exists #PercentPopulationVaccinated
+Create table #PercentPopulationVaccinatinated
+(
+Continent nvarchar(255),
+Location nvarchar(255),
+Date datetime,
+Population numeric,
+New_vaccinations numeric,
+RollingTotalVaccinated numeric
+)
+
+INSERT INTO #PercentPopulationVaccinatinated
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
+SUM(CONVERT(int, vac.new_vaccinations)) OVER (Partition BY dea.location ORDER BY dea.location, dea.date) as RollingTotalVaccinated
+FROM PortfolioProject..CovidDeaths dea
+JOIN PortfolioProject..CovidVaccinations vac
+	ON dea.location = vac.location 
+	AND dea.date = vac.date
+WHERE dea.continent is NOT NULL
+GROUP BY dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+
+SELECT *, (RollingTotalVaccinated/Population) * 100 as PercentPopVaccinated 
+FROM #PercentPopulationVaccinatinated
+
+
+-- Create a view for later visualizations
+
+Create View PercentPopulationVaccinated as
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
+SUM(CONVERT(int, vac.new_vaccinations)) OVER (Partition BY dea.location ORDER BY dea.location, dea.date) as RollingTotalVaccinated
+FROM PortfolioProject..CovidDeaths dea
+JOIN PortfolioProject..CovidVaccinations vac
+	ON dea.location = vac.location 
+	AND dea.date = vac.date
+WHERE dea.continent is NOT NULL
+GROUP BY dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
 
 
 ```
 
 ## Conclusion
 
+Throughout this project, I have gained a better understanding of how to sift through a large dataset and find insights that will help create better business decisions. This dataset was absolutely massive, and I plan to do more exploration on it in the future. I utilized multiple different methods to query the data while finding some really interesting insights about how countries were affected by COVID and the measures they took against it. Overall, it was a lot of fun to look through the past and find some new things about COVID around the world.
