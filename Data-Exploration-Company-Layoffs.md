@@ -3,6 +3,11 @@
 **Project Title**: Company Layoff Data Exploration
 
 This project is designed to demonstrate SQL skills and techniques typically used by data analysts to explore company layoff data. The project involves finding insights within the company layoff data that can be used for visualizations and foster better business intelligence.
+
+## Skills Used
+- Aggregate Functions
+- CTEs
+
 ## Objectives
 
 1. **Explore the Data**
