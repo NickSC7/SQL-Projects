@@ -4,6 +4,12 @@
 
 This project is designed to demonstrate SQL skills and techniques typically used by data analysts to clean company layoff data. The project involves setting up a layoff databse, importing the layoff data into mySQL, and cleaning the data.
 
+## Skills Used:
+- Table creation
+- Window Functions
+- CTEs
+- ETL processes
+
 ## Objectives
 
 1. **Set up a layoff database**
