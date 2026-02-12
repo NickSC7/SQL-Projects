@@ -7,6 +7,7 @@ This project is designed to demonstrate SQL skills and techniques typically used
 ## Skills Used
 - Aggregate Functions
 - CTEs
+- Window Functions
 
 ## Objectives
 
@@ -38,7 +39,7 @@ FROM layoffs_staging2
 GROUP BY company
 ORDER BY sum(total_laid_off) DESC;
 
--- Seeing which industry had the most layoffs over the date range: Concsumer > Retail > Other
+-- Seeing which industry had the most layoffs over the date range: Consumer > Retail > Other
 SELECT industry, SUM(total_laid_off)
 FROM layoffs_staging2
 GROUP BY industry
